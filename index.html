@@ -405,7 +405,7 @@ const SUB={
 const DEFAULT_MATS={P:SUB.P.mats,C:SUB.C.mats,M:SUB.M.mats,B:SUB.B.mats};
 const MAT_ICONS=["video","book","file","pen","sheet","play","link","note"];
 const DAYNAMES=["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","Friday"];
-const START=new Date(2026,8,12);            // Week 1 · Day 1 = Saturday, Sep 12 2026
+const START=new Date(2026,8,19);            // Week 1 · Day 1 = Saturday, Sep 19 2026
 const LEVELS=[[30,8],[50,10],[60,12],[70,15],[80,17],[90,20]];
 
 const F=p=>"file:///Users/sabbirhasan/Downloads/ALL/"+p;
@@ -442,6 +442,15 @@ function norm(s){if(!s.marks)s.marks={};
   if(!s.mats)s.mats=clone(DEFAULT_MATS);
   for(const k of Object.keys(DEFAULT_MATS))if(!s.mats[k])s.mats[k]=clone(DEFAULT_MATS[k]);
   if(!s.plan)s.plan=clone(DEFAULT_PLAN);
+  if(!s.startISO)s.startISO="2026-09-12";
+  const curStartISO=START.getFullYear()+"-"+String(START.getMonth()+1).padStart(2,"0")+"-"+String(START.getDate()).padStart(2,"0");
+  if(s.startISO!==curStartISO){
+    const oldStart=new Date(s.startISO+"T00:00"),shift=Math.round((START-oldStart)/864e5),shifted={};
+    for(const kk in s.marks){const mm=kk.match(/^D(\d+)\|(.+)$/);
+      if(!mm){shifted[kk]=s.marks[kk];continue;}
+      const nd=+mm[1]-shift;if(nd>=1)shifted["D"+nd+"|"+mm[2]]=s.marks[kk];}
+    s.marks=shifted;s.startISO=curStartISO;
+  }
   const nm={};for(const kk in s.marks){const p=kk.split("|");let nk=kk;
     if(p.length===3&&/^\d{4}-\d{2}-\d{2}$/.test(p[0])){const di=dayInfo(new Date(p[0]+"T00:00"));if(!di)continue;nk="D"+di.studyDay+"|"+p[1]+"|"+p[2];}
     nm[nk]=s.marks[kk];}
@@ -545,7 +554,7 @@ function renderRail(){
   $("#calGrid").innerHTML=g;
   const di=dayInfo();$("#weekBadge").textContent=di?("Week "+di.week):"Pre-season";
   $("#ringDate").textContent=now.toLocaleDateString("en-US",{month:"long",day:"numeric"});
-  $("#ringSub").textContent=di?("Day "+di.studyDay+" of 7"):"starts Sep 12";
+  $("#ringSub").textContent=di?("Day "+(di.dow+1)+" of 7"):"starts Sep 19";
   const ta=todayAllot(),tm=minsOn(today()),pct=ta?Math.min(100,Math.round(tm/ta*100)):0;
   $("#ringNum").textContent=pct+"%";$("#ringFg").style.strokeDashoffset=207.3*(1-pct/100);
   // heatmap 84 days
@@ -601,7 +610,7 @@ function renderToday(){
     <h2 style="margin-bottom:8px">Countdown to Day 1</h2><p class="muted" style="margin-bottom:20px">Week 1 begins Saturday, September 12, 2026. Here's your opening day:</p>
     <div style="max-width:640px;margin:0 auto;text-align:left">${PLAN[0].subs.map(sb=>renderSubjectToday(sb,{studyDay:1,dow:0,week:1})).join("")}</div></div>`;}
   else{const plan=PLAN[(di.studyDay-1)%7];
-    el.innerHTML=`<div class="row" style="margin-bottom:14px"><span class="badge">${I.sun} ${DAYNAMES[di.dow]}</span><span class="badge">Day ${di.studyDay} of 7</span><span class="badge">Week ${di.week}</span></div>`
+    el.innerHTML=`<div class="row" style="margin-bottom:14px"><span class="badge">${I.sun} ${DAYNAMES[di.dow]}</span><span class="badge">Day ${di.dow+1} of 7</span><span class="badge">Week ${di.week}</span></div>`
     +plan.subs.map(sb=>renderSubjectToday(sb,di)).join("");}
   // diary
   const t=today();$("#diaryIn").value=S.diary[t]||"";$("#slackIn").value=S.slack[t]||"";
