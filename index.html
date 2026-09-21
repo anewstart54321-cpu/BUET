@@ -409,6 +409,7 @@ const START=new Date(2026,8,19);            // Week 1 · Day 1 = Saturday, Sep 1
 const LEVELS=[[30,8],[50,10],[60,12],[70,15],[80,17],[90,20]];
 
 const F=p=>"file:///Users/sabbirhasan/Downloads/ALL/"+p;
+const linkTarget=u=>/^file:/i.test(u||"")?"":' target="_blank"';
 /* DEFAULT_PLAN is the frozen factory template (for Admin's "reset week plan" action).
    PLAN itself becomes a live pointer at S.plan once state loads, so every existing
    PLAN[...] read/write in the app keeps working unchanged against the editable copy. */
@@ -628,7 +629,7 @@ function renderSubjectToday(sb,di){
     return `<div class="mat${mk==="done"?" isdone":mk==="missed"?" ismiss":""}"><div class="mic">${I[it.ic]}</div>
     <div class="mn"><b>${it.n}</b><span>${it.along?"alongside the session":it.min+" min planned"}</span></div>
     <span class="mks"><button class="mk${mk==="done"?" ok":""}" data-mk="done|${di.studyDay}|${sb.s}|${i}" title="Mark completed">${I.check}</button><button class="mk${mk==="missed"?" no":""}" data-mk="missed|${di.studyDay}|${sb.s}|${i}" title="Mark not completed">${I.x}</button></span>
-    ${it.lk||it.lks?`<a class="icobtn" href="${it.lk||it.lks[0]}" target="_blank" title="Open">${I.ext}</a>`:""}
+    ${it.lk||it.lks?`<a class="icobtn" href="${it.lk||it.lks[0]}"${linkTarget(it.lk||it.lks[0])} title="Open">${I.ext}</a>`:""
     <button class="btn" data-start="${di.studyDay}|${sb.s}|${i}">${I.play} Start</button></div>`;}).join("");
   return `<div class="subj-block"><div class="subj-head"><span class="dot" style="background:${SUB[sb.s].color}"></span><b>${title}</b>
     <span class="pill">${sb.items.filter((_,i)=>S.marks["D"+di.studyDay+"|"+sb.s+"|"+i]==="done").length}/${sb.items.length} done · ${Math.round(done)}/${al} min</span></div>${rows}</div>`;
@@ -697,7 +698,7 @@ function renderWeekly(){
   // and both tabs — plus the chapter checkboxes — stay in sync as weeks pass.
   const di=dayInfo(),week=di?di.week:1,curDay=di?di.studyDay:-1;
   const chip=(it,i,day,sb)=>{const mk=S.marks["D"+day+"|"+sb.s+"|"+i];
-    return `<span class="chip${mk==="done"?" isdone":mk==="missed"?" ismiss":""}">${I[it.ic]}${it.lk?`<a href="${it.lk}" target="_blank">${it.n}</a>`:`<span>${it.n}</span>`}${it.lks?it.lks.map((u,j)=>`<a class="icobtn" style="width:22px;height:22px" href="${u}" target="_blank" title="Open tab ${j+1}">${I.ext}</a>`).join(""):""}
+    return `<span class="chip${mk==="done"?" isdone":mk==="missed"?" ismiss":""}">${I[it.ic]}${it.lk?`<a href="${it.lk}"${linkTarget(it.lk)} >${it.n}</a>`:`<span>${it.n}</span>`}${it.lks?it.lks.map((u,j)=>`<a class="icobtn" style="width:22px;height:22px" href="${u}" ${linkTarget(u)} title="Open tab ${j+1}">${I.ext}</a>`).join(""):""}
     <button class="mk sm${mk==="done"?" ok":""}" data-mk="done|${day}|${sb.s}|${i}" title="Mark completed">${I.check}</button><button class="mk sm${mk==="missed"?" no":""}" data-mk="missed|${day}|${sb.s}|${i}" title="Mark not completed">${I.x}</button>
     <em>${it.along?"alongside":(it.min>=60?(it.min/60)+"h":it.min+"m")}</em></span>`;};
   $("#weekPlan").innerHTML=`<div class="row" style="margin-bottom:14px"><span class="badge">${I.cal} Week ${week}</span><span class="muted">Tick or cross any item — it stays synced with Today and Chapters</span></div>`
@@ -748,7 +749,7 @@ function renderChapters(){
   const k=curSub,nmats=SUB[k].mats.length;
   const mats=(arr,id,p)=>SUB[k].mats.map((md,j)=>{
     const lks=md[2]?(Array.isArray(md[2])?md[2]:[md[2]]):[];
-    return `<span class="mt ${arr[j]?"done":""}" data-tk="${id}|${p}|${j}">${I[md[1]]}${lks.map(u=>`<a href="${u}" target="_blank" title="Open ${md[0]}" onclick="event.stopPropagation()" style="display:inline-flex;color:var(--gold-d)">${I.ext}</a>`).join("")}<span class="ck">${I.check}</span>${md[0]}</span>`;}).join("");
+    return `<span class="mt ${arr[j]?"done":""}" data-tk="${id}|${p}|${j}">${I[md[1]]}${lks.map(u=>`<a href="${u}" ${linkTarget(u)} title="Open ${md[0]}" onclick="event.stopPropagation()" style="display:inline-flex;color:var(--gold-d)">${I.ext}</a>`).join("")}<span class="ck">${I.check}</span>${md[0]}</span>`;}).join("");
   $("#chList").innerHTML=CH[k].map((nm,i)=>{const id=k+"-"+(i+1),c=S.ch[id];
     let inner=`<div class="ch top"><span class="bigck ${c.done?"done":""}" data-big="${id}">${I.check}</span>
       <div class="cb"><b>Chapter ${i+1} · ${nm}</b><span>${c.parts>=2?c.parts+" parts":"whole chapter"}</span></div>
@@ -831,7 +832,7 @@ function renderAdmin(){
       <button class="btn ghost" id="resetMatsBtn">${I.del} Reset to default</button>
     </div>
     <div class="mats" style="margin-top:0">${SUB[ak].mats.map((md,i)=>
-      `<span class="mt done" style="cursor:default">${I[md[1]]||I.file}<span class="ck" style="display:none"></span>${md[0]}${md[2]?` <a href="${md[2]}" target="_blank" style="margin-left:4px;display:inline-flex" onclick="event.stopPropagation()">${I.ext}</a>`:""}
+      `<span class="mt done" style="cursor:default">${I[md[1]]||I.file}<span class="ck" style="display:none"></span>${md[0]}${md[2]?` <a href="${md[2]}" ${linkTarget(u)} style="margin-left:4px;display:inline-flex" onclick="event.stopPropagation()">${I.ext}</a>`:""}
         <button class="icobtn" data-rmmat="${i}" title="Remove" style="width:20px;height:20px;margin-left:6px">${I.x}</button></span>`).join("")||'<span class="muted">No materials yet — add one below.</span>'}
     </div>
     <div class="row" style="margin-top:14px;gap:8px;flex-wrap:wrap">
