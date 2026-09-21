@@ -170,7 +170,8 @@ canvas.chart{width:100%;height:220px;display:block}
 .week{background:var(--card);border:1px solid var(--line);border-radius:14px;box-shadow:var(--shadow);min-height:150px;display:flex;flex-direction:column}
 .week header{padding:10px 13px;border-bottom:1px solid var(--line);font-weight:800;font-size:12.5px;letter-spacing:1px;text-transform:uppercase;color:var(--ink2);display:flex;justify-content:space-between}
 .week .zone{flex:1;padding:9px;display:flex;flex-direction:column;gap:7px;border-radius:0 0 14px 14px}
-.week .zone.over{background:#f7edd0;outline:2px dashed var(--gold);outline-offset:-4px}
+.week .zone.over{background:#f3dde0;outline:2px dashed var(--gold);outline-offset:-4px}
+.pool.over{background:#f3dde0;outline:2px dashed var(--gold);outline-offset:-4px;border-radius:12px}
 .mini{padding:6px 9px;border-radius:9px;background:var(--cream);border:1px solid var(--line);font-size:12px;font-weight:600;display:flex;align-items:center;gap:6px}
 .mini .x{margin-left:auto;color:var(--ink2);cursor:pointer;font-size:13px}
 
@@ -709,8 +710,14 @@ function renderPlanner(){
   $("#pool").innerHTML=pool.map(it=>`<span class="drag" draggable="true" data-id="${it.id}"><span style="color:${SUB[it.sub].color}">●</span>${it.name}${it.label?" · "+it.label:""}<span class="dv" data-div="${it.id}" title="Divide into parts">${I.cut}</span></span>`).join("")
     ||'<span class="muted">Everything is assigned or finished. Excellent.</span>';
   $("#weeks").innerHTML=[...Array(18)].map((_,i)=>{const w="W"+(i+1),ids=S.assign[w]||[];
-    return `<div class="week"><header><span>Week ${i+1}</span><span>${ids.length||""}</span></header><div class="zone" data-w="${w}">${ids.map(id=>`<div class="mini"><span style="color:${SUB[id[0]].color}">●</span>${labelOf(id)}<span class="x" data-un="${w}|${id}">${I.x}</span></div>`).join("")}</div></div>`;}).join("");
-  document.querySelectorAll(".drag").forEach(d=>{d.ondragstart=e=>e.dataTransfer.setData("text/plain",d.dataset.id);});
+return `<div class="week"><header><span>Week ${i+1}</span><span>${ids.length||""}</span></header><div class="zone" data-w="${w}">${ids.map(id=>`<div class="mini" draggable="true" data-id="${id}"><span style="color:${SUB[id[0]].color}">●</span>${labelOf(id)}<span class="x" data-un="${w}|${id}">${I.x}</span></div>`).join("")}</div></div>`;}).join("");
+  document.querySelectorAll(".drag,.mini").forEach(d=>{d.ondragstart=e=>e.dataTransfer.setData("text/plain",d.dataset.id);});
+  const poolEl=$("#pool");
+  poolEl.ondragover=e=>{e.preventDefault();poolEl.classList.add("over");};
+  poolEl.ondragleave=()=>poolEl.classList.remove("over");
+  poolEl.ondrop=e=>{e.preventDefault();poolEl.classList.remove("over");const id=e.dataTransfer.getData("text/plain");if(!id)return;
+    for(const w in S.assign)S.assign[w]=S.assign[w].filter(x=>x!==id);
+    save();render();toast(labelOf(id)+" → back to pool");};
   document.querySelectorAll(".zone").forEach(z=>{
     z.ondragover=e=>{e.preventDefault();z.classList.add("over");};
     z.ondragleave=()=>z.classList.remove("over");
