@@ -408,7 +408,7 @@ const DAYNAMES=["Saturday","Sunday","Monday","Tuesday","Wednesday","Thursday","F
 const START=new Date(2026,8,19);            // Week 1 · Day 1 = Saturday, Sep 19 2026
 const LEVELS=[[30,8],[50,10],[60,12],[70,15],[80,17],[90,20]];
 
-const F=p=>"file:///Users/sabbirhasan/Downloads/ALL/"+p;
+const F=p=>"http://localhost:8000/"+p;
 const linkTarget=u=>/^file:/i.test(u||"")?"":' target="_blank"';
 /* DEFAULT_PLAN is the frozen factory template (for Admin's "reset week plan" action).
    PLAN itself becomes a live pointer at S.plan once state loads, so every existing
