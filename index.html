@@ -40,7 +40,12 @@
     pending=[];painted=true;
   }
   function report(msg){pending.push(msg);paint();}
-  window.addEventListener('error',function(e){report((e.error&&e.error.stack)||e.message||'Unknown error');});
+window.addEventListener('error',function(e){
+  report(
+    (e.error&&e.error.stack) ||
+    `${e.message || "Unknown error"}\nSource: ${e.filename || "unknown"}\nLine: ${e.lineno || "?"}:${e.colno || "?"}`
+  );
+});
   window.addEventListener('unhandledrejection',function(e){report('Unhandled promise rejection: '+((e.reason&&e.reason.message)||e.reason));});
 })();
 </script>
